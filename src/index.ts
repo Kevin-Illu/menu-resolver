@@ -17,8 +17,6 @@ export default class TreeMenuResolver {
 
   constructor(private readonly menu: Menu[]) {
     this.buildFlatmap({ menu: this.menu });
-    console.log(this.flatMapMenu);
-    // console.log(this.__mappedTree);
   }
 
   // don't forget the children
