@@ -92,4 +92,4 @@ const easyTree = [
   },
 ];
 
-export const treeMenuTest = complexTree;
+export const treeMenuTest = easyTree;
