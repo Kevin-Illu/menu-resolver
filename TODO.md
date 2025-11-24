@@ -1,37 +1,15 @@
-# Things I wanna get done
+# Project Tasks
 
-### How do I wanna use the `TreeMenuResolver` in my system
+## Core Functionality
+- [x] **Define Tree Menu Structure**: Support defining the menu as a tree or list of options.
+- [x] **TreeMenuResolver Class**: Implement the main class to manage the menu state.
+- [x] **Menu Flattening**: Implement `buildFlatmap` to index all menu nodes for O(1) access.
+- [x] **Displayable Menu**: Implement `getDisplayableMenu` to retrieve the current menu state, supporting depth limiting.
+- [x] **Navigation**: Implement `choose` method to update the current node and navigate the tree.
+- [x] **Action Resolution**: Ensure menu options can have executable `resolve` functions.
 
-Tree menu definition
+## Usage Pattern
+- [x] **Loop Support**: Ensure the manager state can be used in an external user-controlled loop.
 
-```ts
-// define the resolver
-const tree = { ...TreeMenu };
-const TreeMenuManager = new TreeMenuResolver(tree);
-```
-
-Then I just wanna resolve the first deeph of the tree
-like getting the first menu to show to the user and then
-printing them in the console or werever UI I choose
-
-Getting the first options of the menu
-
-```ts
-// the choose type looks like this
-type UserChose = {
-  id: string;
-  resolve: () => any;
-};
-
-// at this point if the tree has children then the currentNode change
-const menu = TreeManuManager.getDisplayableMenu();
-// your code to print the menu
-const selectedOptionId = UIManager.render(menu);
-const userChose = TreeMenuManager.choose(selectedOptionId);
-const executeResults = userChose.resolve();
-
-// When I execute getDisplayableMenu() again it would return the children with
-// his options because it already change it by calling the `choose` function
-```
-
-The last code should run in a loop manage by the user not the manager.
+## Future / Pending
+- [x] Add unit tests for edge cases (circular references, empty menus).

@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { treeMenuTest } from "./test.js";
 
 export type Menu = {
   label: string;
@@ -11,16 +10,17 @@ export default class TreeMenuResolver {
   private flatMapMenu: Map<
     string,
     Omit<Menu, "children"> & {
+      id: string;
       parentKey: string | null;
     }
   > = new Map();
+
+  private currentNodeId: string | null = null;
 
   constructor(private readonly menu: Menu[]) {
     this.buildFlatmap({ menu: this.menu });
   }
 
-  // don't forget the children
-  // thoes needs to be references. ONLY ids
   buildFlatmap({
     menu,
     parentKey = null,
@@ -32,6 +32,7 @@ export default class TreeMenuResolver {
       const key = randomUUID();
 
       this.flatMapMenu.set(key, {
+        id: key,
         label: menu.label,
         parentKey: parentKey || null,
         resolve: menu?.resolve ?? null,
@@ -50,12 +51,42 @@ export default class TreeMenuResolver {
       this.buildFlatmap({ menu: option, parentKey });
     }
   }
+
+  getDisplayableMenu(): {
+    id: string;
+    label: string;
+    parentKey: string | null;
+    resolve?: any;
+    children?: any[];
+  }[] {
+    const parentKey = this.currentNodeId;
+    const children: any[] = [];
+
+    for (const [key, value] of this.flatMapMenu.entries()) {
+      if (value.parentKey === parentKey) {
+        children.push({
+          ...value
+        });
+      }
+    }
+    return children;
+  }
+
+  findNodeById(id: string) {
+    return this.flatMapMenu.get(id);
+  }
+
+  choose(id: string) {
+    const node = this.flatMapMenu.get(id);
+    if (!node) {
+      throw new Error(`Node with id ${id} not found`);
+    }
+
+    this.currentNodeId = id;
+    return {
+      id: node.id,
+      resolve: node.resolve,
+    };
+  }
 }
-//
-const menuManager = new TreeMenuResolver(treeMenuTest);
-// const displayableMenu = menuManager.getDisplayableMenu();
-// console.log(displayableMenu);
-// const optionSelected = displayableMenu?.children[1];
-//
-// console.log(optionSelected);
-// // console.log(menuManager.findNodeById(optionSelected.id));
+
