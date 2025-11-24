@@ -9,6 +9,12 @@ A flexible, tree-based menu resolver for building command-line interfaces.
 - **Navigation**: State management for traversing the menu tree.
 - **Action Resolution**: Attach executable data or functions to menu items.
 
+## Installation
+
+```bash
+npm install cli-menu
+```
+
 ## Usage
 
 ### Basic Example
