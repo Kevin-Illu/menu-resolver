@@ -1,0 +1,27 @@
+# Source files
+src/
+*.ts
+!*.d.ts
+
+# Development files
+.idea/
+.vscode/
+*.tsbuildinfo
+tsconfig.json
+vitest.config.ts
+
+# Test files
+*.test.js
+*.test.d.ts
+*.test.js.map
+dist/*.test.*
+dist/test.js
+dist/test.d.ts
+dist/test.js.map
+
+# Other
+node_modules/
+.git/
+.gitignore
+TODO.md
+pnpm-lock.yaml

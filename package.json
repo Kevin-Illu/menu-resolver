@@ -5,8 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist",
-    "README.md"
+    "dist/index.js",
+    "dist/index.d.ts",
+    "dist/index.js.map",
+    "README.md",
+    "LICENSE"
   ],
   "exports": {
     ".": {
@@ -30,6 +33,14 @@
   ],
   "author": "Kevin Illu",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kevin-Illu/menu-resolver.git"
+  },
+  "homepage": "https://github.com/Kevin-Illu/menu-resolver#readme",
+  "bugs": {
+    "url": "https://github.com/Kevin-Illu/menu-resolver/issues"
+  },
   "packageManager": "pnpm@10.6.2",
   "devDependencies": {
     "@types/node": "^24.10.1",
