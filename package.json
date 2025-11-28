@@ -1,5 +1,5 @@
 {
-  "name": "cli-menu",
+  "name": "menu-resolver",
   "version": "1.0.0",
   "description": "A flexible, tree-based menu resolver for building command-line interfaces.",
   "main": "dist/index.js",

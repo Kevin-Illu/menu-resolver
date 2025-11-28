@@ -1,4 +1,4 @@
-# CLI Menu
+# Menu Resolver
 
 A flexible, tree-based menu resolver for building command-line interfaces.
 
@@ -12,7 +12,7 @@ A flexible, tree-based menu resolver for building command-line interfaces.
 ## Installation
 
 ```bash
-npm install cli-menu
+npm install menu-resolver
 ```
 
 ## Usage
