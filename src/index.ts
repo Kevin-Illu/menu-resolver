@@ -1,18 +1,10 @@
 import { randomUUID } from "node:crypto";
-
-export type Menu = {
-  label: string;
-  resolve?: any;
-  children?: Menu[];
-};
+import { Menu, Node, ResolverAPI } from "./types";
 
 export default class TreeMenuResolver {
   private flatMapMenu: Map<
     string,
-    Omit<Menu, "children"> & {
-      id: string;
-      parentKey: string | null;
-    }
+    Node
   > = new Map();
 
   private currentNodeId: string | null = null;
@@ -31,12 +23,14 @@ export default class TreeMenuResolver {
     if (!Array.isArray(menu)) {
       const key = randomUUID();
 
-      this.flatMapMenu.set(key, {
+      const node = {
         id: key,
         label: menu.label,
         parentKey: parentKey || null,
-        resolve: menu?.resolve ?? null,
-      });
+        resolve: this.resolveAction(menu?.resolve),
+      };
+
+      this.flatMapMenu.set(key, node);
 
       // if has children then double it and pass it to the next person xD
       if (menu?.children && menu.children.length >= 1) {
@@ -50,6 +44,18 @@ export default class TreeMenuResolver {
     for (const option of menu as Menu[]) {
       this.buildFlatmap({ menu: option, parentKey });
     }
+  }
+
+  resolveAction(action: any) {
+    if (typeof action === "function") {
+      const api: ResolverAPI = {
+        goBack: this.goBack.bind(this)
+      };
+
+      return () => action(api);
+    }
+
+    return action;
   }
 
   getDisplayableMenu(): {

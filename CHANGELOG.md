@@ -1,0 +1,56 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Changed
+- **BREAKING**: Simplified `Node` type to include `label` and `resolve` properties directly
+  - Previously: `Node` only had `id` and `parentKey`
+  - Now: `Node` includes `id`, `label`, `resolve`, and `parentKey`
+  - This makes the `Node` type more complete and self-contained
+
+- **BREAKING**: Simplified `ResolverAPI` interface
+  - Removed `node` property from `ResolverAPI`
+  - Now only contains `goBack()` method
+  - This simplifies the API and focuses on navigation control
+
+- Updated `flatMapMenu` internal structure
+  - Now uses the simplified `Node` type directly
+  - Removed complex inline type definition: `Omit<Menu, "children"> & { id: string; parentKey: string | null; }`
+
+### Improved
+- Refactored `buildFlatmap` method for better readability
+  - Extracted node creation to a separate variable before adding to Map
+  - Makes the code flow more explicit and easier to debug
+
+- Enhanced documentation
+  - Updated README with comprehensive examples
+  - Added `ResolverAPI` usage examples showing `goBack()` functionality
+  - Improved type documentation with inline comments
+  - Added practical examples demonstrating real-world usage patterns
+
+- Added `example.ts` file
+  - Comprehensive demonstration of all library features
+  - Shows hierarchical menu navigation
+  - Demonstrates `goBack()` functionality
+  - Includes practical use cases (File Operations, Settings, etc.)
+
+### Fixed
+- Fixed TypeScript type error with `Map.get()` returning `undefined`
+  - Added nullish coalescing operator (`?? null`) to convert `undefined` to `null`
+  - Ensures type compatibility with `Node | null` expectations
+
+## [1.0.0] - Previous Release
+
+### Added
+- Initial release of menu-resolver
+- Tree-based menu structure support
+- Flat indexing with O(1) lookup
+- Navigation state management
+- `goBack()` method for hierarchical navigation
+- Action resolution system
+- Full TypeScript support

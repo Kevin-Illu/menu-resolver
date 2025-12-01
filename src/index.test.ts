@@ -9,16 +9,16 @@ describe("TreeMenuResolver", () => {
     menu = [
       {
         label: "Node 1",
-        resolve: () => "Node 1",
+        resolve: "Node 1",
         children: [
           {
             label: "Node 1: child 1",
-            resolve: () => "Node 1: child 1",
+            resolve: "Node 1: child 1",
             children: [],
           },
           {
             label: "Node 1: child 2",
-            resolve: () => "Node 1: child 2",
+            resolve: "Node 1: child 2",
             children: [
               {
                 label: "Node 1: child 2: subchild 1",
@@ -31,7 +31,7 @@ describe("TreeMenuResolver", () => {
       },
       {
         label: "Node 2",
-        resolve: () => "Node 2",
+        resolve: "Node 2",
         children: [],
       },
     ];

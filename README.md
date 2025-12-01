@@ -1,13 +1,14 @@
 # Menu Resolver
 
-A flexible, tree-based menu resolver for building command-line interfaces.
+A flexible, tree-based menu resolver for building command-line interfaces with hierarchical navigation.
 
 ## Features
 
 - **Tree Structure**: Define menus with arbitrary depth.
 - **Flat Indexing**: Efficient O(1) lookup for menu nodes.
-- **Navigation**: State management for traversing the menu tree.
-- **Action Resolution**: Attach executable data or functions to menu items.
+- **Navigation**: State management for traversing the menu tree with `goBack()` support.
+- **Action Resolution**: Attach executable functions or data to menu items.
+- **Type-Safe**: Full TypeScript support with exported types.
 
 ## Installation
 
@@ -20,30 +21,30 @@ npm install menu-resolver
 ### Basic Example
 
 ```typescript
-import TreeMenuResolver, { Menu } from "./src/index";
+import TreeMenuResolver, { Menu } from "menu-resolver";
 
 // 1. Define your menu structure
 const menuStructure: Menu[] = [
   {
     label: "Start Game",
-    resolve: "START_GAME_ACTION",
+    resolve: () => console.log("Starting game..."),
   },
   {
     label: "Settings",
     children: [
       {
         label: "Audio",
-        resolve: "OPEN_AUDIO_SETTINGS",
+        resolve: () => console.log("Opening audio settings..."),
       },
       {
         label: "Graphics",
-        resolve: "OPEN_GRAPHICS_SETTINGS",
+        resolve: () => console.log("Opening graphics settings..."),
       },
     ],
   },
   {
     label: "Exit",
-    resolve: "EXIT_ACTION",
+    resolve: () => process.exit(0),
   },
 ];
 
@@ -58,39 +59,175 @@ console.log(mainOptions.map(o => o.label));
 // 4. Navigate to a submenu (e.g., "Settings")
 const settingsNode = mainOptions.find(o => o.label === "Settings");
 if (settingsNode) {
-  resolver.choose(settingsNode.id);
+  const result = resolver.choose(settingsNode.id);
   
   const settingsOptions = resolver.getDisplayableMenu();
   console.log(settingsOptions.map(o => o.label));
   // Output: ['Audio', 'Graphics']
+  
+  // 5. Execute a resolve function if it exists
+  if (result.resolve) {
+    result.resolve();
+  }
 }
 ```
 
-### API Reference
+### Advanced Example with ResolverAPI
 
-#### `constructor(menu: Menu[])`
+The `resolve` function receives a `ResolverAPI` object that provides navigation capabilities:
+
+```typescript
+import TreeMenuResolver, { Menu, ResolverAPI } from "menu-resolver";
+
+const menuStructure: Menu[] = [
+  {
+    label: "User Management",
+    children: [
+      {
+        label: "Create User",
+        resolve: (api: ResolverAPI) => {
+          console.log("Creating user...");
+          // After creating user, go back to main menu
+          api.goBack();
+        },
+      },
+      {
+        label: "Delete User",
+        resolve: (api: ResolverAPI) => {
+          console.log("Deleting user...");
+          // Navigate back after action
+          api.goBack();
+        },
+      },
+      {
+        label: "Back to Main Menu",
+        resolve: (api: ResolverAPI) => {
+          api.goBack();
+        },
+      },
+    ],
+  },
+  {
+    label: "Reports",
+    children: [
+      {
+        label: "Generate Report",
+        resolve: (api: ResolverAPI) => {
+          console.log("Generating report...");
+          // Stay in the same menu level
+        },
+      },
+    ],
+  },
+];
+
+const resolver = new TreeMenuResolver(menuStructure);
+
+// Navigate to User Management
+const menu = resolver.getDisplayableMenu();
+const userMgmt = menu.find(o => o.label === "User Management");
+if (userMgmt) {
+  resolver.choose(userMgmt.id);
+  
+  // Choose "Create User"
+  const subMenu = resolver.getDisplayableMenu();
+  const createUser = subMenu.find(o => o.label === "Create User");
+  if (createUser) {
+    const result = resolver.choose(createUser.id);
+    if (result.resolve) {
+      result.resolve(); // This will create user and go back automatically
+    }
+  }
+}
+```
+
+
+## API Reference
+
+### `constructor(menu: Menu[])`
 Initializes the menu resolver with a tree of menu items.
 
-#### `getDisplayableMenu()`
+**Parameters:**
+- `menu`: Array of `Menu` objects defining the menu structure.
+
+---
+
+### `getDisplayableMenu()`
 Returns the list of menu items for the current level.
-- Returns: Array of objects containing `id` and `label` only.
 
-#### `choose(id: string)`
-Selects a menu item by its ID.
+**Returns:** 
+```typescript
+Array<{ id: string; label: string }>
+```
+
+**Example:**
+```typescript
+const options = resolver.getDisplayableMenu();
+// [{ id: "uuid-1", label: "Start Game" }, { id: "uuid-2", label: "Settings" }]
+```
+
+---
+
+### `choose(id: string)`
+Selects a menu item by its ID and updates the current navigation level.
+
+**Parameters:**
+- `id`: The unique identifier of the menu item to select.
+
+**Returns:** 
+```typescript
+{ id: string; resolve?: (api: ResolverAPI) => void | any }
+```
+
+**Behavior:**
 - If the item has children, the current level updates to show those children.
-- Returns: `{ id: string, resolve: any }` containing the selected node's ID and resolve value.
-- Throws: Error if the ID is invalid.
+- Returns an object containing the selected node's `id` and `resolve` function (if defined).
 
-#### `findNodeById(id: string)`
-Retrieves a node directly by its ID.
-- Returns: Node object or `undefined` if not found.
+**Throws:** 
+- `Error` if the ID is invalid or not found.
 
-#### `goBack()`
+**Example:**
+```typescript
+const result = resolver.choose(nodeId);
+if (result.resolve) {
+  result.resolve(); // Execute the action
+}
+```
+
+---
+
+### `findNodeById(id: string)`
+Retrieves a complete node directly by its ID.
+
+**Parameters:**
+- `id`: The unique identifier of the node.
+
+**Returns:** 
+```typescript
+Node | undefined
+```
+
+**Example:**
+```typescript
+const node = resolver.findNodeById(nodeId);
+if (node) {
+  console.log(node.label, node.parentKey);
+}
+```
+
+---
+
+### `goBack()`
 Navigates back to the parent node of the currently selected node.
-- Updates the current level to show the parent's siblings.
+
+**Behavior:**
+- Updates the current level to show the parent's children (siblings of current node).
 - Can navigate all the way back to the top level (main menu).
-- Throws: `"You haven't chosen any node"` if no node is currently selected (already at top level).
-- Throws: `"Current node with id {id} not found"` if the current node ID is invalid.
+- When at top level, `currentNodeId` becomes `null`.
+
+**Throws:** 
+- `"You haven't chosen any node"` if no node is currently selected (already at top level).
+- `"Current node with id {id} not found"` if the current node ID is invalid.
 
 **Example:**
 ```typescript
@@ -100,23 +237,67 @@ resolver.choose(settingsNode.id);
 
 // Now at Settings submenu
 const settingsOptions = resolver.getDisplayableMenu();
-// ['Audio', 'Graphics']
+// [{ id: "...", label: "Audio" }, { id: "...", label: "Graphics" }]
 
 // Go back to main menu
 resolver.goBack();
 const backToMain = resolver.getDisplayableMenu();
-// ['Start Game', 'Settings', 'Exit']
+// [{ id: "...", label: "Start Game" }, { id: "...", label: "Settings" }, ...]
 
 // Try to go back again from top level
 resolver.goBack(); // Throws: "You haven't chosen any node"
 ```
 
+---
+
 ## Types
+
+### `Menu`
+Defines the structure of a menu item.
 
 ```typescript
 type Menu = {
-  label: string;
-  resolve?: any;     // Data or function to execute when selected
-  children?: Menu[]; // Nested menu items
+  label: string;                                    // Display text for the menu item
+  resolve?: (api: ResolverAPI) => void | any;      // Optional function to execute when selected
+  children?: Menu[];                                // Optional nested menu items
 };
 ```
+
+### `Node`
+Internal representation of a menu item with navigation metadata.
+
+```typescript
+type Node = {
+  id: string;                                       // Unique identifier (auto-generated UUID)
+  label: string;                                    // Display text
+  resolve?: (api: ResolverAPI) => void | any;      // Optional resolve function
+  parentKey: string | null;                         // ID of parent node, or null for top-level
+};
+```
+
+### `ResolverAPI`
+API object passed to resolve functions for navigation control.
+
+```typescript
+type ResolverAPI = {
+  goBack: () => void;  // Navigate back to the parent menu level
+};
+```
+
+**Usage in resolve functions:**
+```typescript
+const menu: Menu = {
+  label: "Save and Exit",
+  resolve: (api: ResolverAPI) => {
+    saveData();
+    api.goBack(); // Return to previous menu after saving
+  },
+};
+```
+
+---
+
+## License
+
+MIT
+
