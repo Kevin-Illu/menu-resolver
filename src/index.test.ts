@@ -106,4 +106,88 @@ describe("TreeMenuResolver", () => {
 
     expect(() => new TreeMenuResolver([node1])).toThrowError(/Maximum call stack size exceeded|Circular reference detected/);
   });
+
+  describe("goBack()", () => {
+    it("should navigate back to parent node", () => {
+      // Navigate to Node 1
+      const topLevel = resolver.getDisplayableMenu();
+      const node1 = topLevel.find((n) => n.label === "Node 1");
+      resolver.choose(node1!.id);
+
+      // Navigate to Node 1: child 2
+      const level2 = resolver.getDisplayableMenu();
+      const child2 = level2.find((n) => n.label === "Node 1: child 2");
+      resolver.choose(child2!.id);
+
+      // Verify we're at level 3
+      const level3 = resolver.getDisplayableMenu();
+      expect(level3).toHaveLength(1);
+      expect(level3[0]!.label).toBe("Node 1: child 2: subchild 1");
+
+      // Go back to level 2
+      resolver.goBack();
+      const backToLevel2 = resolver.getDisplayableMenu();
+      expect(backToLevel2).toHaveLength(2);
+      expect(backToLevel2[0]!.label).toBe("Node 1: child 1");
+      expect(backToLevel2[1]!.label).toBe("Node 1: child 2");
+    });
+
+    it("should navigate back multiple levels", () => {
+      // Navigate to Node 1
+      const topLevel = resolver.getDisplayableMenu();
+      const node1 = topLevel.find((n) => n.label === "Node 1");
+      resolver.choose(node1!.id);
+
+      // Navigate to Node 1: child 2
+      const level2 = resolver.getDisplayableMenu();
+      const child2 = level2.find((n) => n.label === "Node 1: child 2");
+      resolver.choose(child2!.id);
+
+      // Navigate to Node 1: child 2: subchild 1
+      const level3 = resolver.getDisplayableMenu();
+      const subchild1 = level3.find((n) => n.label === "Node 1: child 2: subchild 1");
+      resolver.choose(subchild1!.id);
+
+      // Go back to level 3 (Node 1: child 2's children)
+      resolver.goBack();
+      const backToLevel3 = resolver.getDisplayableMenu();
+      expect(backToLevel3).toHaveLength(1);
+      expect(backToLevel3[0]!.label).toBe("Node 1: child 2: subchild 1");
+
+      // Go back to level 2 (Node 1's children)
+      resolver.goBack();
+      const backToLevel2 = resolver.getDisplayableMenu();
+      expect(backToLevel2).toHaveLength(2);
+      expect(backToLevel2[0]!.label).toBe("Node 1: child 1");
+      expect(backToLevel2[1]!.label).toBe("Node 1: child 2");
+    });
+
+    it("should throw error when no node has been chosen", () => {
+      expect(() => resolver.goBack()).toThrowError(
+        "You haven't chosen any node"
+      );
+    });
+
+    it("should allow going back to the top level from a first-level node", () => {
+      const topLevel = resolver.getDisplayableMenu();
+      const node1 = topLevel.find((n) => n.label === "Node 1");
+      resolver.choose(node1!.id);
+
+      // Verify we're at Node 1's children
+      const level2 = resolver.getDisplayableMenu();
+      expect(level2).toHaveLength(2);
+
+      // Go back to top level (currentNodeId becomes null)
+      resolver.goBack();
+      const backToTop = resolver.getDisplayableMenu();
+      expect(backToTop).toHaveLength(2);
+      expect(backToTop[0]!.label).toBe("Node 1");
+      expect(backToTop[1]!.label).toBe("Node 2");
+
+      // Try to go back again from top level - should throw error
+      expect(() => resolver.goBack()).toThrowError(
+        "You haven't chosen any node"
+      );
+    });
+  });
 });

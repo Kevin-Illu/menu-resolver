@@ -55,9 +55,6 @@ export default class TreeMenuResolver {
   getDisplayableMenu(): {
     id: string;
     label: string;
-    parentKey: string | null;
-    resolve?: any;
-    children?: any[];
   }[] {
     const parentKey = this.currentNodeId;
     const children: any[] = [];
@@ -65,7 +62,8 @@ export default class TreeMenuResolver {
     for (const [key, value] of this.flatMapMenu.entries()) {
       if (value.parentKey === parentKey) {
         children.push({
-          ...value
+          id: value.id,
+          label: value.label
         });
       }
     }
@@ -88,5 +86,18 @@ export default class TreeMenuResolver {
       resolve: node.resolve,
     };
   }
-}
 
+  goBack() {
+    if (!this.currentNodeId) {
+      throw new Error("You haven't chosen any node");
+    }
+
+    const node = this.findNodeById(this.currentNodeId);
+
+    if (!node) {
+      throw new Error(`Current node with id ${this.currentNodeId} not found`);
+    }
+
+    this.currentNodeId = node.parentKey;
+  }
+}

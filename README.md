@@ -73,7 +73,7 @@ Initializes the menu resolver with a tree of menu items.
 
 #### `getDisplayableMenu()`
 Returns the list of menu items for the current level.
-- Returns: Array of objects containing `id`, `label`, `parentKey`, `resolve`.
+- Returns: Array of objects containing `id` and `label` only.
 
 #### `choose(id: string)`
 Selects a menu item by its ID.
@@ -83,6 +83,33 @@ Selects a menu item by its ID.
 
 #### `findNodeById(id: string)`
 Retrieves a node directly by its ID.
+- Returns: Node object or `undefined` if not found.
+
+#### `goBack()`
+Navigates back to the parent node of the currently selected node.
+- Updates the current level to show the parent's siblings.
+- Can navigate all the way back to the top level (main menu).
+- Throws: `"You haven't chosen any node"` if no node is currently selected (already at top level).
+- Throws: `"Current node with id {id} not found"` if the current node ID is invalid.
+
+**Example:**
+```typescript
+const topLevel = resolver.getDisplayableMenu();
+const settingsNode = topLevel.find(o => o.label === "Settings");
+resolver.choose(settingsNode.id);
+
+// Now at Settings submenu
+const settingsOptions = resolver.getDisplayableMenu();
+// ['Audio', 'Graphics']
+
+// Go back to main menu
+resolver.goBack();
+const backToMain = resolver.getDisplayableMenu();
+// ['Start Game', 'Settings', 'Exit']
+
+// Try to go back again from top level
+resolver.goBack(); // Throws: "You haven't chosen any node"
+```
 
 ## Types
 
