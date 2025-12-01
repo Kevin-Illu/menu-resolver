@@ -1,5 +1,8 @@
 # Menu Resolver
 
+![npm version](https://img.shields.io/npm/v/menu-resolver.svg)
+![npm downloads](https://img.shields.io/npm/dm/menu-resolver.svg)
+
 A flexible, tree-based menu resolver for building command-line interfaces with hierarchical navigation.
 
 ## Features
