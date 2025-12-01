@@ -20,11 +20,11 @@ export type MenuParent = {
 export type MenuActionSimple = {
   label: string;
   resolve: string;
-  children?: undefined;
+  children?: Menu[] | undefined;
 };
 
 export type MenuActionCustom = {
   label: string;
   resolve: (rsApi: ResolverAPI) => any;
-  children?: undefined;
+  children?: Menu[] | undefined;
 };

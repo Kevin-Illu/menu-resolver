@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import TreeMenuResolver, { Menu } from "./index";
+import TreeMenuResolver from "./index";
+import { Menu } from "./types";
 
 describe("TreeMenuResolver", () => {
   let menu: Menu[];
@@ -14,7 +15,6 @@ describe("TreeMenuResolver", () => {
           {
             label: "Node 1: child 1",
             resolve: "Node 1: child 1",
-            children: [],
           },
           {
             label: "Node 1: child 2",
