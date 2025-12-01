@@ -13,7 +13,7 @@ export default class TreeMenuResolver {
     this.buildFlatmap({ menu: this.menu });
   }
 
-  buildFlatmap({
+  private buildFlatmap({
     menu,
     parentKey = null,
   }: {
@@ -46,7 +46,7 @@ export default class TreeMenuResolver {
     }
   }
 
-  resolveAction(action: any) {
+  private resolveAction(action: any) {
     if (typeof action === "function") {
       const api: ResolverAPI = {
         goBack: this.goBack.bind(this)
@@ -58,7 +58,7 @@ export default class TreeMenuResolver {
     return action;
   }
 
-  getDisplayableMenu(): {
+  public getDisplayableMenu(): {
     id: string;
     label: string;
   }[] {
@@ -76,11 +76,11 @@ export default class TreeMenuResolver {
     return children;
   }
 
-  findNodeById(id: string) {
+  private findNodeById(id: string) {
     return this.flatMapMenu.get(id);
   }
 
-  choose(id: string) {
+  public choose(id: string) {
     const node = this.flatMapMenu.get(id);
     if (!node) {
       throw new Error(`Node with id ${id} not found`);
@@ -93,7 +93,7 @@ export default class TreeMenuResolver {
     };
   }
 
-  goBack() {
+  public goBack() {
     if (!this.currentNodeId) {
       throw new Error("You haven't chosen any node");
     }
