@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Menu, Node, ResolverAPI } from "./types";
+export * from "./types";
 
 export default class TreeMenuResolver {
   private flatMapMenu: Map<

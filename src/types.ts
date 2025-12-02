@@ -9,7 +9,7 @@ export type ResolverAPI = {
   goBack: () => void,
 }
 
-export type Menu = MenuParent | MenuActionSimple | MenuActionCustom;
+export type Menu = Prettify<MenuParent | MenuActionSimple | MenuActionCustom>;
 
 export type MenuParent = {
   label: string;
@@ -28,3 +28,8 @@ export type MenuActionCustom = {
   resolve: (rsApi: ResolverAPI) => any;
   children?: Menu[] | undefined;
 };
+
+// just utils
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
