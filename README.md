@@ -256,13 +256,35 @@ resolver.goBack(); // Throws: "You haven't chosen any node"
 ## Types
 
 ### `Menu`
-Defines the structure of a menu item.
+Defines the structure of a menu item. It is a union of three types:
 
+#### `MenuParent`
+A node that contains children but no resolve action.
 ```typescript
-type Menu = {
-  label: string;                                    // Display text for the menu item
-  resolve?: (api: ResolverAPI) => void | any;      // Optional function to execute when selected
-  children?: Menu[];                                // Optional nested menu items
+type MenuParent = {
+  label: string;
+  children: Menu[];
+  resolve?: undefined;
+};
+```
+
+#### `MenuActionSimple`
+A node with a string identifier for resolution.
+```typescript
+type MenuActionSimple = {
+  label: string;
+  resolve: string;
+  children?: Menu[];
+};
+```
+
+#### `MenuActionCustom`
+A node with a custom resolve function.
+```typescript
+type MenuActionCustom = {
+  label: string;
+  resolve: (rsApi: ResolverAPI) => any;
+  children?: Menu[];
 };
 ```
 
@@ -273,7 +295,7 @@ Internal representation of a menu item with navigation metadata.
 type Node = {
   id: string;                                       // Unique identifier (auto-generated UUID)
   label: string;                                    // Display text
-  resolve?: (api: ResolverAPI) => void | any;      // Optional resolve function
+  resolve?: () => void | any;                       // Wrapped resolve function
   parentKey: string | null;                         // ID of parent node, or null for top-level
 };
 ```

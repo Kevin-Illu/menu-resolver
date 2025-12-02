@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2025-12-02
 
 ### Changed
+- **BREAKING**: Updated `Menu` type to be a union of `MenuParent`, `MenuActionSimple`, and `MenuActionCustom`.
+  - `MenuParent`: Node with children, no resolve.
+  - `MenuActionSimple`: Node with string resolve.
+  - `MenuActionCustom`: Node with function resolve.
+- Updated `Node` type to have `resolve` as a parameter-less function (wrapped).
+
 - **BREAKING**: Simplified `Node` type to include `label` and `resolve` properties directly
   - Previously: `Node` only had `id` and `parentKey`
   - Now: `Node` includes `id`, `label`, `resolve`, and `parentKey`
@@ -23,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed complex inline type definition: `Omit<Menu, "children"> & { id: string; parentKey: string | null; }`
 
 ### Improved
+- Added JSDoc comments to all exported types and methods for better IDE support and documentation.
 - Refactored `buildFlatmap` method for better readability
   - Extracted node creation to a separate variable before adding to Map
   - Makes the code flow more explicit and easier to debug
