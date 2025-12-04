@@ -15,6 +15,8 @@ export type Node = {
  */
 export type ResolverAPI = {
   goBack: () => void,
+  choose: (nodeId: string) => void,
+  currentNode: Node
 }
 
 /**
@@ -109,8 +111,12 @@ export default class TreeMenuResolver {
 
   private resolveAction(action: any) {
     if (typeof action === "function") {
+      const currentNode = this.findNodeById(this.currentNodeId);
+
       const api: ResolverAPI = {
-        goBack: this.goBack.bind(this)
+        goBack: this.goBack.bind(this),
+        choose: this.choose.bind(this),
+        currentNode,
       };
 
       return () => action(api);
