@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [3.0.0] - 2025-12-05
+
+### Changed
+- **BREAKING**: Removed `label` property from `Node`, `MenuParent`, `MenuActionSimple`, and `MenuActionCustom`.
+  - Use the new generic `data` property to store labels and other custom information.
+  - Example: `{ label: "My Node" }` -> `{ data: { label: "My Node" } }`.
+- **BREAKING**: `ResolverAPI` updated:
+  - Added `currentNode` property (can be `undefined`).
+  - Added `choose` method.
+- **Added**: Full Generic support `<T>` for `TreeMenuResolver` and all exported types.
+  - Allows strict typing of the `data` property.
+  - Defaults to `any` for backward compatibility (except for the `label` removal).
+- **Added**: `data` property to all menu node types to support arbitrary metadata.
+
 ## [2.0.0] - 2025-12-02
 
 ### Changed
