@@ -307,7 +307,7 @@ API object passed to resolve functions for navigation control.
 type ResolverAPI = {
   goBack: () => void;  // Navigate back to the parent menu level
   choose: (nodeId: string) => void; // Choose a node to navigate there.
-  currentNode: Node; // Node selected
+  currentNode: Node | undefined; // Node selected
 };
 ```
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import TreeMenuResolver, { Menu } from "./index";
+import TreeMenuResolver, { Menu, ResolverAPI } from "./index";
 
 describe("TreeMenuResolver", () => {
   let menu: Menu[];
@@ -187,6 +187,34 @@ describe("TreeMenuResolver", () => {
       expect(() => resolver.goBack()).toThrowError(
         "You haven't chosen any node"
       );
+    });
+  });
+
+  describe("ResolverAPI", () => {
+    it("should provide the correct currentNode in resolve callback", () => {
+      let capturedNode: any;
+      const customMenu: Menu[] = [{
+        label: "My Node",
+        resolve: (api: ResolverAPI) => {
+          capturedNode = api.currentNode;
+        }
+      }];
+      const customResolver = new TreeMenuResolver(customMenu);
+      const displayable = customResolver.getDisplayableMenu();
+      const myNode = displayable.find(n => n.label === "My Node");
+
+      expect(myNode).toBeDefined();
+
+      const result = customResolver.choose(myNode!.id);
+
+      // Execute the resolve function
+      if (typeof result.resolve === 'function') {
+        result.resolve();
+      }
+
+      expect(capturedNode).toBeDefined();
+      expect(capturedNode.id).toBe(myNode!.id);
+      expect(capturedNode.label).toBe("My Node");
     });
   });
 });

@@ -16,7 +16,7 @@ export type Node = {
 export type ResolverAPI = {
   goBack: () => void,
   choose: (nodeId: string) => void,
-  currentNode: Node
+  currentNode: Node | undefined
 }
 
 /**
@@ -111,15 +111,17 @@ export default class TreeMenuResolver {
 
   private resolveAction(action: any) {
     if (typeof action === "function") {
-      const currentNode = this.findNodeById(this.currentNodeId);
+      return () => {
+        const currentNode = this.findNodeById(this.currentNodeId);
 
-      const api: ResolverAPI = {
-        goBack: this.goBack.bind(this),
-        choose: this.choose.bind(this),
-        currentNode,
+        const api: ResolverAPI = {
+          goBack: this.goBack.bind(this),
+          choose: this.choose.bind(this),
+          currentNode,
+        };
+
+        return action(api);
       };
-
-      return () => action(api);
     }
 
     return action;
@@ -147,7 +149,8 @@ export default class TreeMenuResolver {
     return children;
   }
 
-  private findNodeById(id: string) {
+  private findNodeById(id: string | null) {
+    if (!id) return undefined;
     return this.flatMapMenu.get(id);
   }
 
