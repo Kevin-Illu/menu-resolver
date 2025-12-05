@@ -26,27 +26,30 @@ npm install menu-resolver
 ```typescript
 import TreeMenuResolver, { Menu } from "menu-resolver";
 
+// Define a type for your menu data (optional but recommended)
+type MenuData = { title: string };
+
 // 1. Define your menu structure
-const menuStructure: Menu[] = [
+const menuStructure: Menu<MenuData>[] = [
   {
-    label: "Start Game",
+    data: { title: "Start Game" },
     resolve: () => console.log("Starting game..."),
   },
   {
-    label: "Settings",
+    data: { title: "Settings" },
     children: [
       {
-        label: "Audio",
+        data: { title: "Audio" },
         resolve: () => console.log("Opening audio settings..."),
       },
       {
-        label: "Graphics",
+        data: { title: "Graphics" },
         resolve: () => console.log("Opening graphics settings..."),
       },
     ],
   },
   {
-    label: "Exit",
+    data: { title: "Exit" },
     resolve: () => process.exit(0),
   },
 ];
@@ -56,16 +59,16 @@ const resolver = new TreeMenuResolver(menuStructure);
 
 // 3. Get the top-level menu items
 const mainOptions = resolver.getDisplayableMenu();
-console.log(mainOptions.map(o => o.label));
+console.log(mainOptions.map(o => o.data?.title));
 // Output: ['Start Game', 'Settings', 'Exit']
 
 // 4. Navigate to a submenu (e.g., "Settings")
-const settingsNode = mainOptions.find(o => o.label === "Settings");
+const settingsNode = mainOptions.find(o => o.data?.title === "Settings");
 if (settingsNode) {
   const result = resolver.choose(settingsNode.id);
   
   const settingsOptions = resolver.getDisplayableMenu();
-  console.log(settingsOptions.map(o => o.label));
+  console.log(settingsOptions.map(o => o.data?.title));
   // Output: ['Audio', 'Graphics']
   
   // 5. Execute a resolve function if it exists
@@ -82,40 +85,42 @@ The `resolve` function receives a `ResolverAPI` object that provides navigation 
 ```typescript
 import TreeMenuResolver, { Menu, ResolverAPI } from "menu-resolver";
 
-const menuStructure: Menu[] = [
+type MenuData = { title: string };
+
+const menuStructure: Menu<MenuData>[] = [
   {
-    label: "User Management",
+    data: { title: "User Management" },
     children: [
       {
-        label: "Create User",
-        resolve: (api: ResolverAPI) => {
+        data: { title: "Create User" },
+        resolve: (api: ResolverAPI<MenuData>) => {
           console.log("Creating user...");
           // After creating user, go back to main menu
           api.goBack();
         },
       },
       {
-        label: "Delete User",
-        resolve: (api: ResolverAPI) => {
+        data: { title: "Delete User" },
+        resolve: (api: ResolverAPI<MenuData>) => {
           console.log("Deleting user...");
           // Navigate back after action
           api.goBack();
         },
       },
       {
-        label: "Back to Main Menu",
-        resolve: (api: ResolverAPI) => {
+        data: { title: "Back to Main Menu" },
+        resolve: (api: ResolverAPI<MenuData>) => {
           api.goBack();
         },
       },
     ],
   },
   {
-    label: "Reports",
+    data: { title: "Reports" },
     children: [
       {
-        label: "Generate Report",
-        resolve: (api: ResolverAPI) => {
+        data: { title: "Generate Report" },
+        resolve: (api: ResolverAPI<MenuData>) => {
           console.log("Generating report...");
           // Stay in the same menu level
         },
@@ -128,13 +133,13 @@ const resolver = new TreeMenuResolver(menuStructure);
 
 // Navigate to User Management
 const menu = resolver.getDisplayableMenu();
-const userMgmt = menu.find(o => o.label === "User Management");
+const userMgmt = menu.find(o => o.data?.title === "User Management");
 if (userMgmt) {
   resolver.choose(userMgmt.id);
   
   // Choose "Create User"
   const subMenu = resolver.getDisplayableMenu();
-  const createUser = subMenu.find(o => o.label === "Create User");
+  const createUser = subMenu.find(o => o.data?.title === "Create User");
   if (createUser) {
     const result = resolver.choose(createUser.id);
     if (result.resolve) {
@@ -147,7 +152,7 @@ if (userMgmt) {
 
 ## API Reference
 
-### `constructor(menu: Menu[])`
+### `constructor(menu: Menu<T>[])`
 Initializes the menu resolver with a tree of menu items.
 
 **Parameters:**
@@ -160,13 +165,13 @@ Returns the list of menu items for the current level.
 
 **Returns:** 
 ```typescript
-Array<{ id: string; label: string }>
+Array<{ id: string; data?: T }>
 ```
 
 **Example:**
 ```typescript
 const options = resolver.getDisplayableMenu();
-// [{ id: "uuid-1", label: "Start Game" }, { id: "uuid-2", label: "Settings" }]
+// [{ id: "uuid-1", data: { title: "Start Game" } }, ...]
 ```
 
 ---
@@ -179,7 +184,7 @@ Selects a menu item by its ID and updates the current navigation level.
 
 **Returns:** 
 ```typescript
-{ id: string; resolve?: (api: ResolverAPI) => void | any }
+{ id: string; resolve?: (api: ResolverAPI<T>) => void | any }
 ```
 
 **Behavior:**
@@ -207,14 +212,14 @@ Retrieves a complete node directly by its ID.
 
 **Returns:** 
 ```typescript
-Node | undefined
+Node<T> | undefined
 ```
 
 **Example:**
 ```typescript
 const node = resolver.findNodeById(nodeId);
 if (node) {
-  console.log(node.label, node.parentKey);
+  console.log(node.data, node.parentKey);
 }
 ```
 
@@ -235,17 +240,15 @@ Navigates back to the parent node of the currently selected node.
 **Example:**
 ```typescript
 const topLevel = resolver.getDisplayableMenu();
-const settingsNode = topLevel.find(o => o.label === "Settings");
+const settingsNode = topLevel.find(o => o.data?.title === "Settings");
 resolver.choose(settingsNode.id);
 
 // Now at Settings submenu
 const settingsOptions = resolver.getDisplayableMenu();
-// [{ id: "...", label: "Audio" }, { id: "...", label: "Graphics" }]
 
 // Go back to main menu
 resolver.goBack();
 const backToMain = resolver.getDisplayableMenu();
-// [{ id: "...", label: "Start Game" }, { id: "...", label: "Settings" }, ...]
 
 // Try to go back again from top level
 resolver.goBack(); // Throws: "You haven't chosen any node"
@@ -255,67 +258,67 @@ resolver.goBack(); // Throws: "You haven't chosen any node"
 
 ## Types
 
-### `Menu`
+### `Menu<T>`
 Defines the structure of a menu item. It is a union of three types:
 
-#### `MenuParent`
+#### `MenuParent<T>`
 A node that contains children but no resolve action.
 ```typescript
-type MenuParent = {
-  label: string;
-  children: Menu[];
+type MenuParent<T> = {
+  data?: T;
+  children: Menu<T>[];
   resolve?: undefined;
 };
 ```
 
-#### `MenuActionSimple`
+#### `MenuActionSimple<T>`
 A node with a string identifier for resolution.
 ```typescript
-type MenuActionSimple = {
-  label: string;
+type MenuActionSimple<T> = {
+  data?: T;
   resolve: string;
-  children?: Menu[];
+  children?: Menu<T>[];
 };
 ```
 
-#### `MenuActionCustom`
+#### `MenuActionCustom<T>`
 A node with a custom resolve function.
 ```typescript
-type MenuActionCustom = {
-  label: string;
-  resolve: (rsApi: ResolverAPI) => any;
-  children?: Menu[];
+type MenuActionCustom<T> = {
+  data?: T;
+  resolve: (rsApi: ResolverAPI<T>) => any;
+  children?: Menu<T>[];
 };
 ```
 
-### `Node`
+### `Node<T>`
 Internal representation of a menu item with navigation metadata.
 
 ```typescript
-type Node = {
+type Node<T> = {
   id: string;                                       // Unique identifier (auto-generated UUID)
-  label: string;                                    // Display text
+  data?: T;                                         // Custom data
   resolve?: () => void | any;                       // Wrapped resolve function
   parentKey: string | null;                         // ID of parent node, or null for top-level
 };
 ```
 
-### `ResolverAPI`
+### `ResolverAPI<T>`
 API object passed to resolve functions for navigation control.
 
 ```typescript
-type ResolverAPI = {
+type ResolverAPI<T> = {
   goBack: () => void;  // Navigate back to the parent menu level
   choose: (nodeId: string) => void; // Choose a node to navigate there.
-  currentNode: Node | undefined; // Node selected
+  currentNode: Node<T> | undefined; // Node selected
 };
 ```
 
 **Usage in resolve functions:**
 ```typescript
-const menu: Menu = {
-  label: "Save and Exit",
-  resolve: (api: ResolverAPI) => {
+const menu: Menu<MyData> = {
+  data: { title: "Save and Exit" },
+  resolve: (api: ResolverAPI<MyData>) => {
     saveData();
     api.goBack(); // Return to previous menu after saving
   },

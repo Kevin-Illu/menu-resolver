@@ -3,9 +3,9 @@ import { randomUUID } from "node:crypto";
 /**
  * Represents a node in the flattened menu tree.
  */
-export type Node = {
+export type Node<T = any> = {
   id: string;
-  label: string;
+  data?: T | undefined;
   resolve?: () => void | any;
   parentKey: string | null;
 }
@@ -13,42 +13,42 @@ export type Node = {
 /**
  * API provided to custom resolve functions for navigation control.
  */
-export type ResolverAPI = {
+export type ResolverAPI<T = any> = {
   goBack: () => void,
   choose: (nodeId: string) => void,
-  currentNode: Node | undefined
+  currentNode: Node<T> | undefined
 }
 
 /**
  * Represents a menu item. Can be a parent node, a simple action, or a custom action.
  */
-export type Menu = Prettify<MenuParent | MenuActionSimple | MenuActionCustom>;
+export type Menu<T = any> = Prettify<MenuParent<T> | MenuActionSimple<T> | MenuActionCustom<T>>;
 
 /**
  * A menu node that contains children but no resolve action.
  */
-export type MenuParent = {
-  label: string;
-  children: Menu[];
+export type MenuParent<T = any> = {
+  data?: T | undefined;
+  children: Menu<T>[];
   resolve?: undefined;
 };
 
 /**
  * A menu node with a simple string identifier for resolution.
  */
-export type MenuActionSimple = {
-  label: string;
+export type MenuActionSimple<T = any> = {
+  data?: T | undefined;
   resolve: string;
-  children?: Menu[] | undefined;
+  children?: Menu<T>[] | undefined;
 };
 
 /**
  * A menu node with a custom resolve function.
  */
-export type MenuActionCustom = {
-  label: string;
-  resolve: (rsApi: ResolverAPI) => any;
-  children?: Menu[] | undefined;
+export type MenuActionCustom<T = any> = {
+  data?: T | undefined;
+  resolve: (rsApi: ResolverAPI<T>) => any;
+  children?: Menu<T>[] | undefined;
 };
 
 // just utils
@@ -60,10 +60,10 @@ type Prettify<T> = {
 /**
  * Manages a tree-based menu structure, providing navigation and resolution capabilities.
  */
-export default class TreeMenuResolver {
+export default class TreeMenuResolver<T = any> {
   private flatMapMenu: Map<
     string,
-    Node
+    Node<T>
   > = new Map();
 
   private currentNodeId: string | null = null;
@@ -72,7 +72,7 @@ export default class TreeMenuResolver {
    * Initializes the menu resolver with a menu structure.
    * @param menu The array of menu items defining the tree.
    */
-  constructor(private readonly menu: Menu[]) {
+  constructor(private readonly menu: Menu<T>[]) {
     this.buildFlatmap({ menu: this.menu });
   }
 
@@ -80,15 +80,15 @@ export default class TreeMenuResolver {
     menu,
     parentKey = null,
   }: {
-    menu: Menu[] | Menu;
+    menu: Menu<T>[] | Menu<T>;
     parentKey?: string | null;
   }) {
     if (!Array.isArray(menu)) {
       const key = randomUUID();
 
-      const node = {
+      const node: Node<T> = {
         id: key,
-        label: menu.label,
+        data: menu.data,
         parentKey: parentKey || null,
         resolve: this.resolveAction(menu?.resolve),
       };
@@ -104,7 +104,7 @@ export default class TreeMenuResolver {
       return;
     }
 
-    for (const option of menu as Menu[]) {
+    for (const option of menu) {
       this.buildFlatmap({ menu: option, parentKey });
     }
   }
@@ -114,7 +114,7 @@ export default class TreeMenuResolver {
       return () => {
         const currentNode = this.findNodeById(this.currentNodeId);
 
-        const api: ResolverAPI = {
+        const api: ResolverAPI<T> = {
           goBack: this.goBack.bind(this),
           choose: this.choose.bind(this),
           currentNode,
@@ -133,23 +133,23 @@ export default class TreeMenuResolver {
    */
   public getDisplayableMenu(): {
     id: string;
-    label: string;
+    data?: T | undefined;
   }[] {
     const parentKey = this.currentNodeId;
-    const children: any[] = [];
+    const children: { id: string; data?: T }[] = [];
 
     for (const [key, value] of this.flatMapMenu.entries()) {
       if (value.parentKey === parentKey) {
         children.push({
           id: value.id,
-          label: value.label
+          data: value.data
         });
       }
     }
     return children;
   }
 
-  private findNodeById(id: string | null) {
+  private findNodeById(id: string | null): Node<T> | undefined {
     if (!id) return undefined;
     return this.flatMapMenu.get(id);
   }
