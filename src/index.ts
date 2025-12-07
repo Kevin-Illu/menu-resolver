@@ -6,8 +6,9 @@ import { randomUUID } from "node:crypto";
 export type Node<T = any> = {
   id: string;
   data?: T | undefined;
-  resolve?: () => void | any;
+  resolve?: any;
   parentKey: string | null;
+  hasChildren: boolean;
 }
 
 /**
@@ -90,8 +91,11 @@ export default class TreeMenuResolver<T = any> {
         id: key,
         data: menu.data,
         parentKey: parentKey || null,
-        resolve: this.resolveAction(menu?.resolve),
+        resolve: undefined,
+        hasChildren: !!(Array.isArray(menu.children) && menu.children.length >= 1),
       };
+
+      node.resolve = this.resolveAction(menu?.resolve, key);
 
       this.flatMapMenu.set(key, node);
 
@@ -109,10 +113,11 @@ export default class TreeMenuResolver<T = any> {
     }
   }
 
-  private resolveAction(action: any) {
+  private resolveAction(action: any, nodeId: string) {
     if (typeof action === "function") {
       return () => {
-        const currentNode = this.findNodeById(this.currentNodeId);
+        // We use the specific nodeId validation to ensure we pass the correct node context
+        const currentNode = this.findNodeById(nodeId);
 
         const api: ResolverAPI<T> = {
           goBack: this.goBack.bind(this),
@@ -167,7 +172,12 @@ export default class TreeMenuResolver<T = any> {
       throw new Error(`Node with id ${id} not found`);
     }
 
-    this.currentNodeId = id;
+    // If the node has children, update the current node ID
+    // Otherwise, return the node's resolve action
+    if (node.hasChildren) {
+      this.currentNodeId = id;
+    }
+
     return {
       id: node.id,
       resolve: node.resolve,

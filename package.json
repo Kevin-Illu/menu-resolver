@@ -1,6 +1,6 @@
 {
   "name": "menu-resolver",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A flexible, tree-based menu resolver for building command-line interfaces.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

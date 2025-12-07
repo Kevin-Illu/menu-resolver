@@ -189,6 +189,7 @@ Selects a menu item by its ID and updates the current navigation level.
 
 **Behavior:**
 - If the item has children, the current level updates to show those children.
+- If the item is a leaf node (no children), the navigation state remains unchanged.
 - Returns an object containing the selected node's `id` and `resolve` function (if defined).
 
 **Throws:** 

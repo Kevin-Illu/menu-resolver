@@ -24,7 +24,13 @@ describe("TreeMenuResolver", () => {
               {
                 data: { label: "Node 1: child 2: subchild 1" },
                 resolve: () => "Node 1: child 2: subchild 1",
-                children: [],
+                children: [
+                  {
+                    data: { label: "Node 1: child 2: subchild 1: child 1" },
+                    resolve: "Node 1: child 2: subchild 1: child 1",
+                    children: [],
+                  },
+                ],
               },
             ],
           },
@@ -77,14 +83,17 @@ describe("TreeMenuResolver", () => {
     expect(level3[0]!.data?.label).toBe("Node 1: child 2: subchild 1");
   });
 
-  it("should return empty array for leaf nodes", () => {
+  it("should not navigate for leaf nodes", () => {
     // Select Node 2 (leaf)
     const topLevel = resolver.getDisplayableMenu();
     const node2 = topLevel.find((n) => n.data?.label === "Node 2");
     resolver.choose(node2!.id);
 
     const level2 = resolver.getDisplayableMenu();
-    expect(level2).toHaveLength(0);
+    // Should remain at the top level
+    expect(level2).toHaveLength(2);
+    expect(level2.find((n) => n.data?.label === "Node 1")).toBeDefined();
+    expect(level2.find((n) => n.data?.label === "Node 2")).toBeDefined();
   });
 
   it("should throw error when choosing invalid id", () => {
