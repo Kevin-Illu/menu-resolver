@@ -58,6 +58,10 @@ type Prettify<T> = {
 } & {};
 
 
+export type TreeMenuResolverOptions = {
+  injectIdKey?: string;
+};
+
 /**
  * Manages a tree-based menu structure, providing navigation and resolution capabilities.
  */
@@ -72,8 +76,12 @@ export default class TreeMenuResolver<T = any> {
   /**
    * Initializes the menu resolver with a menu structure.
    * @param menu The array of menu items defining the tree.
+   * @param options Configuration options for the resolver.
    */
-  constructor(private readonly menu: Menu<T>[]) {
+  constructor(
+    private readonly menu: Menu<T>[],
+    private readonly options?: TreeMenuResolverOptions
+  ) {
     this.buildFlatmap({ menu: this.menu });
   }
 
@@ -89,7 +97,7 @@ export default class TreeMenuResolver<T = any> {
 
       const node: Node<T> = {
         id: key,
-        data: menu.data,
+        data: this.injectId(menu.data, key),
         parentKey: parentKey || null,
         resolve: undefined,
         hasChildren: !!(Array.isArray(menu.children) && menu.children.length >= 1),
@@ -136,19 +144,17 @@ export default class TreeMenuResolver<T = any> {
    * Retrieves the list of menu items for the current navigation level.
    * @returns An array of objects containing the id and label of each item.
    */
-  public getDisplayableMenu(): {
-    id: string;
-    data?: T | undefined;
-  }[] {
+  public getDisplayableMenu(): T[] {
     const parentKey = this.currentNodeId;
-    const children: { id: string; data?: T }[] = [];
+    const children: T[] = [];
 
     for (const [key, value] of this.flatMapMenu.entries()) {
       if (value.parentKey === parentKey) {
-        children.push({
-          id: value.id,
-          data: value.data
-        });
+        if (value.data) {
+          children.push(value.data);
+        } else {
+          children.push({} as T);
+        }
       }
     }
     return children;
@@ -201,5 +207,20 @@ export default class TreeMenuResolver<T = any> {
     }
 
     this.currentNodeId = node.parentKey;
+  }
+
+  private injectId(data: T | undefined, id: string): T | undefined {
+    if (!this.options?.injectIdKey) {
+      return data;
+    }
+
+    if (!data) {
+      return { [this.options.injectIdKey]: id } as unknown as T;
+    }
+
+    return {
+      ...data,
+      [this.options.injectIdKey]: id,
+    } as T;
   }
 }
