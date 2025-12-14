@@ -105,7 +105,7 @@ describe("TreeMenuResolver", () => {
   });
 
   it("should handle empty menu", () => {
-    const emptyResolver = new TreeMenuResolver([]);
+    const emptyResolver = new TreeMenuResolver([], { injectIdKey: "id" });
     const displayable = emptyResolver.getDisplayableMenu();
     expect(displayable).toHaveLength(0);
   });
@@ -116,7 +116,7 @@ describe("TreeMenuResolver", () => {
     node1.children = [node2];
     node2.children = [node1]; // Circular reference
 
-    expect(() => new TreeMenuResolver([node1])).toThrowError(/Maximum call stack size exceeded|Circular reference detected/);
+    expect(() => new TreeMenuResolver([node1], { injectIdKey: "id" })).toThrowError(/Maximum call stack size exceeded|Circular reference detected/);
   });
 
   describe("goBack()", () => {
@@ -327,7 +327,7 @@ describe("TreeMenuResolver", () => {
         }
       ];
 
-      const resolver = new TreeMenuResolver(menu);
+      const resolver = new TreeMenuResolver(menu, { injectIdKey: "id" });
       const displayable = resolver.getDisplayableMenu();
 
       expect(displayable[0]?.myId).toBeUndefined();

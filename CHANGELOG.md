@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [3.1.0] - 2025-12-14
+
+### Added
+- **New Feature**: `injectIdKey` option in `TreeMenuResolverOptions`.
+  - Allows automatic injection of the generated node ID into the `data` object.
+  - Useful for tracking IDs directly within your data structure without manual mapping.
+
+### Changed
+- **BREAKING**: `TreeMenuResolver` constructor now **requires** a second argument `options`.
+  - Pass `{ injectIdKey: 'your_id_field' }` provides the ID of the node into the data object key that you choose.
+- **BREAKING**: `getDisplayableMenu()` now returns a flattened array of type `T[]`.
+  - Previously returned `{ id: string, data?: T }[]`.
+  - The `id` is now expected to be part of `T` (via `injectIdKey`) if needed.
+
 ## [3.0.1] - 2025-12-06
 
 ### Fixed

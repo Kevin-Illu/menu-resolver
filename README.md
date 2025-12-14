@@ -27,7 +27,7 @@ npm install menu-resolver
 import TreeMenuResolver, { Menu } from "menu-resolver";
 
 // Define a type for your menu data (optional but recommended)
-type MenuData = { title: string };
+type MenuData = { title: string; id?: string };
 
 // 1. Define your menu structure
 const menuStructure: Menu<MenuData>[] = [
@@ -54,21 +54,22 @@ const menuStructure: Menu<MenuData>[] = [
   },
 ];
 
-// 2. Initialize the resolver
-const resolver = new TreeMenuResolver(menuStructure);
+// 2. Initialize the resolver with options
+// injectIdKey: "id" will automatically add the generated UUID to the 'id' field in MenuData
+const resolver = new TreeMenuResolver(menuStructure, { injectIdKey: "id" });
 
 // 3. Get the top-level menu items
 const mainOptions = resolver.getDisplayableMenu();
-console.log(mainOptions.map(o => o.data?.title));
+console.log(mainOptions.map(o => o.title));
 // Output: ['Start Game', 'Settings', 'Exit']
 
 // 4. Navigate to a submenu (e.g., "Settings")
-const settingsNode = mainOptions.find(o => o.data?.title === "Settings");
-if (settingsNode) {
+const settingsNode = mainOptions.find(o => o.title === "Settings");
+if (settingsNode && settingsNode.id) {
   const result = resolver.choose(settingsNode.id);
   
   const settingsOptions = resolver.getDisplayableMenu();
-  console.log(settingsOptions.map(o => o.data?.title));
+  console.log(settingsOptions.map(o => o.title));
   // Output: ['Audio', 'Graphics']
   
   // 5. Execute a resolve function if it exists
@@ -129,18 +130,18 @@ const menuStructure: Menu<MenuData>[] = [
   },
 ];
 
-const resolver = new TreeMenuResolver(menuStructure);
+const resolver = new TreeMenuResolver(menuStructure, { injectIdKey: 'id' });
 
 // Navigate to User Management
 const menu = resolver.getDisplayableMenu();
-const userMgmt = menu.find(o => o.data?.title === "User Management");
-if (userMgmt) {
+const userMgmt = menu.find(o => o.title === "User Management");
+if (userMgmt && userMgmt.id) {
   resolver.choose(userMgmt.id);
   
   // Choose "Create User"
   const subMenu = resolver.getDisplayableMenu();
-  const createUser = subMenu.find(o => o.data?.title === "Create User");
-  if (createUser) {
+  const createUser = subMenu.find(o => o.title === "Create User");
+  if (createUser && createUser.id) {
     const result = resolver.choose(createUser.id);
     if (result.resolve) {
       result.resolve(); // This will create user and go back automatically
@@ -152,26 +153,28 @@ if (userMgmt) {
 
 ## API Reference
 
-### `constructor(menu: Menu<T>[])`
+### `constructor(menu: Menu<T>[], options: TreeMenuResolverOptions)`
 Initializes the menu resolver with a tree of menu items.
 
 **Parameters:**
 - `menu`: Array of `Menu` objects defining the menu structure.
+- `options`: Configuration options.
+  - `injectIdKey`: (Required) The key in your data object where the generated Node ID should be injected.
 
 ---
 
 ### `getDisplayableMenu()`
-Returns the list of menu items for the current level.
+Returns the list of menu items for the current level. The items are flattened `T` objects, containing the injected ID if configured.
 
 **Returns:** 
 ```typescript
-Array<{ id: string; data?: T }>
+T[]
 ```
 
 **Example:**
 ```typescript
 const options = resolver.getDisplayableMenu();
-// [{ id: "uuid-1", data: { title: "Start Game" } }, ...]
+// [{ id: "uuid-1", title: "Start Game" }, ...]
 ```
 
 ---
@@ -241,7 +244,7 @@ Navigates back to the parent node of the currently selected node.
 **Example:**
 ```typescript
 const topLevel = resolver.getDisplayableMenu();
-const settingsNode = topLevel.find(o => o.data?.title === "Settings");
+const settingsNode = topLevel.find(o => o.title === "Settings");
 resolver.choose(settingsNode.id);
 
 // Now at Settings submenu

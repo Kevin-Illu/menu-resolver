@@ -58,8 +58,15 @@ type Prettify<T> = {
 } & {};
 
 
+/**
+ * Options for configuring the TreeMenuResolver.
+ */
 export type TreeMenuResolverOptions = {
-  injectIdKey?: string;
+  /**
+   * The key to use for injecting the generated node ID into the data object.
+   * This allows the ID to be directly accessible within the data object structure.
+   */
+  injectIdKey: string;
 };
 
 /**
@@ -80,7 +87,7 @@ export default class TreeMenuResolver<T = any> {
    */
   constructor(
     private readonly menu: Menu<T>[],
-    private readonly options?: TreeMenuResolverOptions
+    private readonly options: TreeMenuResolverOptions
   ) {
     this.buildFlatmap({ menu: this.menu });
   }
@@ -210,7 +217,7 @@ export default class TreeMenuResolver<T = any> {
   }
 
   private injectId(data: T | undefined, id: string): T | undefined {
-    if (!this.options?.injectIdKey) {
+    if (!this.options.injectIdKey) {
       return data;
     }
 
